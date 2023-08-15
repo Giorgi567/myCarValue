@@ -1,8 +1,16 @@
-import { Controller, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  NotFoundException,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+} from '@nestjs/common';
 import { Post, Get, Put, Delete, Body, Param, Query } from '@nestjs/common';
 import { createUserDTO } from './DTOS/create.user.DTO';
 import { UsersService } from './users.service';
 import { updateUserDTO } from './DTOS/update.user.dto';
+import { serialize } from './MiddleWares/serialized.middleware';
+import { getUserDTO } from './DTOS/get-user.dto';
+@serialize(getUserDTO)
 @Controller('auth')
 export class UsersController {
   constructor(private userService: UsersService) {}
