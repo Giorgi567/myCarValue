@@ -3,6 +3,7 @@ import {
   NotFoundException,
   UseInterceptors,
   ClassSerializerInterceptor,
+  Session,
 } from '@nestjs/common';
 import { Post, Get, Put, Delete, Body, Param, Query } from '@nestjs/common';
 import { createUserDTO } from './DTOS/create.user.DTO';
@@ -10,14 +11,49 @@ import { UsersService } from './users.service';
 import { updateUserDTO } from './DTOS/update.user.dto';
 import { serialize } from './MiddleWares/serialized.middleware';
 import { getUserDTO } from './DTOS/get-user.dto';
+import { authService } from './auth.service';
+import { signInUserDTO } from './DTOS/signIn.user.dto';
+import { currUser } from './decorators/currUserDecorator';
 @serialize(getUserDTO)
 @Controller('auth')
 export class UsersController {
-  constructor(private userService: UsersService) {}
+  constructor(
+    private userService: UsersService,
+    private authService: authService,
+  ) {}
 
   @Post('/signUp')
-  async signUp(@Body() Body: createUserDTO) {
-    return this.userService.create(Body.email, Body.password);
+  async signUp(@Body() Body: createUserDTO, @Session() Session: any) {
+    const user = await this.authService.signUp(Body.email, Body.password);
+    Session.userId = user.id;
+    return user;
+  }
+
+  @Post('/signOut')
+  async signOut(@Session() Session: any) {
+    return (Session.userId = null);
+  }
+
+  // @Get('/getCurrUser')
+  // async getMe(@Session() Session: any) {
+  //   const user = await this.userService.findOne(Session.userId);
+  //   if (!user) {
+  //     throw new Error('User Not Logged In');
+  //   }
+
+  //   return user;
+  // }
+
+  @Get('/getCurrUser')
+  async getMe(@currUser() user: any) {
+    return user;
+  }
+  @Post('/signIn')
+  async signIn(@Body() Body: signInUserDTO, @Session() Session: any) {
+    const user = await this.authService.signIn(Body.email, Body.password);
+    Session.userId = user[0].id;
+
+    return user[0];
   }
 
   @Get('getUsers')

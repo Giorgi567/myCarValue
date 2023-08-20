@@ -17,6 +17,9 @@ export class UsersService {
   }
 
   async findOne(id: string) {
+    if (!id) {
+      return null;
+    }
     return await this.repo.findOne({ where: { id: +id } });
   }
 
