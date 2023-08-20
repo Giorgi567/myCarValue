@@ -1,8 +1,8 @@
 import {
   Controller,
   NotFoundException,
-  UseInterceptors,
   ClassSerializerInterceptor,
+  UseGuards,
   Session,
 } from '@nestjs/common';
 import { Post, Get, Put, Delete, Body, Param, Query } from '@nestjs/common';
@@ -14,6 +14,8 @@ import { getUserDTO } from './DTOS/get-user.dto';
 import { authService } from './auth.service';
 import { signInUserDTO } from './DTOS/signIn.user.dto';
 import { currUser } from './decorators/currUserDecorator';
+import { authGuard } from 'src/guards/auht.guard';
+import { UserEntity } from './users.entity';
 @serialize(getUserDTO)
 @Controller('auth')
 export class UsersController {
@@ -45,7 +47,8 @@ export class UsersController {
   // }
 
   @Get('/getCurrUser')
-  async getMe(@currUser() user: any) {
+  @UseGuards(authGuard)
+  async getMe(@currUser() user: UserEntity) {
     return user;
   }
   @Post('/signIn')
